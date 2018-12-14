@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "www.http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iot.mapper.FaceRefMapper">
+    <resultMap id="FaceRefResultMap" type="com.iot.entity.FaceRef">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="personId" jdbcType="BIGINT" property="person_id"/>
+        <result column="resourceId" jdbcType="BIGINT" property="resource_id"/>
+    </resultMap>
+    <select id="queryByPersonId" parameterType="Long" resultType="String">
+        SELECT resource_id FROM t_face_ref WHERE person_id = #{personId}
+        ORDER BY type
+    </select>
+    <delete id="deleteByPersonId" parameterType="Long">
+        DELETE FROM t_face_ref WHERE person_id = #{personId}
+    </delete>
+</mapper>

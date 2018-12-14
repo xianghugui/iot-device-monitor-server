@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "www.http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iot.mapper.PartDeviceMapper">
+    <resultMap id="PartDeviceVOResultMap" type="com.iot.entity.PartDevice">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result property="partId" column="part_id" javaType="Long" jdbcType="BIGINT"/>
+        <result property="deviceId" column="device_id" javaType="Long" jdbcType="BIGINT"/>
+        <result property="name" column="name" javaType="String" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" javaType="java.util.Date" jdbcType="TIMESTAMP"/>
+        <result property="status" column="status" jdbcType="TINYINT"/>
+        <result property="partName" column="partName" javaType="String" jdbcType="VARCHAR"/>
+        <result property="code" column="code" javaType="String" jdbcType="VARCHAR"/>
+    </resultMap>
+    <select id="queryPage" resultMap="PartDeviceVOResultMap" parameterType="java.util.HashMap">
+        SELECT tpd.id, tpd.device_id, tpd.`name`, tpd.part_id, tpd.create_time, tpd.`status`, td.`code`,
+        td.type, tp.part_name AS partName,tp.parent_id AS parentId
+        FROM t_part_device tpd,t_part tp,t_device td
+        WHERE tpd.device_id = td.id AND tpd.part_id = tp.id AND td.status = 1
+        <if test="type != null and type != ''">
+            AND td.type = #{type}
+        </if>
+        <if test="code != null and code != ''">
+            AND td.code LIKE CONCAT('%',#{code},'%')
+        </if>
+        <if test="partId != null and partId != ''">
+            AND tp.id = #{partId}
+        </if>
+        ORDER BY tpd.create_time DESC
+        LIMIT #{page},#{limit}
+    </select>
+    <select id="queryPageTotal" resultType="Integer" parameterType="java.util.HashMap">
+        SELECT COUNT(tpd.id)
+        FROM t_part_device tpd,t_part tp,t_device td
+        WHERE tpd.device_id = td.id AND tpd.part_id = tp.id AND td.status = 1
+        <if test="type != null and type != ''">
+            AND td.type = #{type}
+        </if>
+        <if test="code != null and code != ''">
+            AND td.code LIKE CONCAT('%',#{code},'%')
+        </if>
+        <if test="partId != null and partId != ''">
+            AND tp.id = #{partId}
+        </if>
+    </select>
+
+    <delete id="deleteByDeviceId" parameterType="Long">
+        DELETE FROM t_part_device WHERE device_id = #{deviceId}
+    </delete>
+
+    <select id="queryDeviceIdById" parameterType="Long" resultType="Long">
+        SELECT device_id FROM t_part_device WHERE id = #{id}
+    </select>
+
+    <select id="queryIdByPartId" parameterType="Long" resultType="java.util.HashMap">
+        SELECT id,device_id 'deviceId' FROM t_part_device WHERE part_id = #{partId}
+    </select>
+
+    <select id="querySchoolNameByDeviceId" resultType="String">
+        SELECT p.part_name
+        FROM t_part_device pd
+        INNER JOIN t_part p ON pd.part_id = p.id
+        WHERE pd.device_id = #{deviceId}
+    </select>
+</mapper>

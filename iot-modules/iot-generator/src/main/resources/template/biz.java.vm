@@ -1,0 +1,11 @@
+package ${package}.service;
+
+import org.springframework.stereotype.Service;
+
+import ${package}.entity.${className};
+import ${package}.mapper.${className}Mapper;
+import com.iot.security.common.biz.BaseBiz;
+
+@Service
+public class ${className}Service extends BaseBiz<${className}Mapper,${className}> {
+}

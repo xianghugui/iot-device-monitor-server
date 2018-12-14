@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "www.http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iot.mapper.PartMapper">
+    <resultMap id="PartResultMap" type="com.iot.entity.Part">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result property="parentId" column="parent_id" javaType="Integer" jdbcType="INTEGER"/>
+        <result property="address" column="address" javaType="String" jdbcType="VARCHAR"/>
+        <result property="partName" column="part_name" javaType="String" jdbcType="VARCHAR"/>
+        <result property="partManager" column="part_manager" javaType="Long" jdbcType="BIGINT"/>
+    </resultMap>
+
+    <select id="querySchoolByNodeId" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        SELECT
+        tp.id,tp.code, tp.parent_id AS parentId, ta.area_name AS areaName, tp.address, tp.part_name AS partName, bu.id AS userId,
+        bu.`name` AS userName,bu.mobile_phone AS phone,tp.create_time AS createTime
+        FROM t_part tp, base_user bu, t_area ta WHERE tp.part_manager = bu.id AND ta.id = tp.parent_id
+        LIMIT #{page},#{limit}
+    </select>
+
+    <select id="querySchoolByNodeIdTotal" parameterType="java.util.HashMap" resultType="Integer">
+        SELECT COUNT(id) AS total FROM t_part
+    </select>
+    <select id="queryByNodeId" parameterType="Integer" resultType="Integer">
+        SELECT COUNT(id) FROM t_part WHERE parent_id = #{id}
+    </select>
+    <select id="schoolUser" resultType="java.util.HashMap">
+        SELECT
+        bu.id AS id, bu.`name` AS userName
+        FROM
+        base_user bu, base_group bg, base_group_member bgm
+        WHERE
+        bu.id = bgm.user_id AND bgm.group_id = bg.id AND bg.id = 19 AND bgm.user_id NOT IN (SELECT part_manager FROM t_part )
+    </select>
+
+
+    <select id="querySchoolBySchoolId" resultType="java.util.HashMap">
+        SELECT
+        tp.id, tp.parent_id AS parentId, ta.area_name AS areaName, tp.address, tp.part_name AS partName, bu.id AS userId,
+        bu.`name` AS userName,bu.mobile_phone AS phone, tp.cost,tp.create_time AS createTime, tp.validity_time 'validityTime'
+        FROM t_part tp, base_user bu, t_area ta WHERE tp.part_manager = bu.id AND ta.id = tp.parent_id AND tp.id = #{id}
+    </select>
+    <select id="pageQuerySchoolByNodeId" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        SELECT
+        tp.id,tp.code, tp.parent_id AS parentId, ta.area_name AS areaName, tp.address, tp.part_name AS partName, bu.id AS userId,
+        bu.`name` AS userName,bu.mobile_phone AS phone, tp.create_time AS createTime
+        FROM
+        t_part tp
+        LEFT JOIN base_user bu ON tp.part_manager = bu.id
+        INNER JOIN t_area ta ON ta.id = tp.parent_id
+        WHERE
+        tp.parent_id LIKE CONCAT(#{id},'%')
+    </select>
+
+    <select id="pageQuerySchoolByNodeIdTotal" parameterType="java.util.HashMap" resultType="Integer">
+        SELECT COUNT(id) AS total FROM t_part WHERE parent_id LIKE CONCAT(#{id},'%')
+    </select>
+
+    <select id="queryCost" parameterType="Long" resultType="Integer">
+        SELECT cost FROM t_part WHERE id = #{partId}
+    </select>
+    <select id="selectSchoolIdByUserId" resultType="java.lang.Long">
+        SELECT id FROM t_part WHERE part_manager = #{id}
+    </select>
+
+    <select id="queryValidityTime" parameterType="Long" resultType="Integer">
+        SELECT validity_time FROM t_part WHERE id = #{partId}
+    </select>
+
+    <select id="queryHasCode" parameterType="String" resultType="Long">
+        SELECT id FROM t_part WHERE code = #{code}
+    </select>
+
+</mapper>

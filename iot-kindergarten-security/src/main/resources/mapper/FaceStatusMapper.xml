@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://www.mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.iot.mapper.FaceStatusMapper">
+    <insert id="insertByPersonArray">
+        INSERT IGNORE INTO t_face_status(person_id, device_id, face_status) VALUES
+        <foreach collection="array" item="item" separator=",">
+                (#{item}, #{deviceId}, 1)
+        </foreach>
+    </insert>
+    <update id="updateByPersonArray">
+        UPDATE t_face_status SET face_status = 1 WHERE face_status = 2 AND device_id = #{deviceId} AND person_id IN
+        <foreach collection="array" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+    <delete id="deleteByPersonArray">
+        DELETE FROM t_face_status WHERE face_status = 3 AND device_id = #{deviceId} AND person_id IN
+        <foreach collection="array" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
+    <update id="updateStatusByPersonId">
+        UPDATE t_face_status SET face_status = #{status} WHERE person_id = #{personId}
+    </update>
+    <update id="updateStatusByDeviceId">
+        UPDATE t_face_status SET face_status = #{status} WHERE device_id = #{deviceId}
+    </update>
+    <select id="selectNeedUpdateStudentByDeviceId" resultType="Long">
+        SELECT DISTINCT s.id
+        FROM t_student s
+        INNER JOIN t_face_ref fr ON s.id = fr.person_id
+        LEFT JOIN t_face_status fs ON s.id = fs.person_id
+        WHERE s.`status` = 1 AND fs.person_id IS NULL
+        OR ( fs.device_id = #{deviceId} AND fs.face_status <![CDATA[<>]]> 1 )
+    </select>
+    <select id="selectNeedUpdateParentByDeviceId" resultType="Long">
+        SELECT DISTINCT p.id
+        FROM t_parent p
+        INNER JOIN t_student s ON p.student = s.id
+        INNER JOIN t_face_ref fr ON p.id = fr.person_id
+        LEFT JOIN t_face_status fs ON p.id = fs.person_id
+        WHERE s.`status` = 1 AND fs.person_id IS NULL
+        OR ( fs.device_id = #{deviceId} AND fs.face_status <![CDATA[<>]]> 1 )
+    </select>
+</mapper>

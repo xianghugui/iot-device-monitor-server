@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "www.http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.iot.mapper.DeviceMapper">
+    <select id="queryAllOrganization" resultType="com.alibaba.fastjson.JSONObject">
+        SELECT id, parent_id  AS parentId, part_name AS `name` FROM t_part;
+    </select>
+
+    <select id="queryDeviceByNodeId" parameterType="java.util.HashMap" resultType="java.util.HashMap">
+        SELECT
+        td.id, td.`name`, td.`code`, ta.area_name AS areaName, tp.part_name AS organizationName, td.create_time AS createTime, td.note, td.`status`, td.`type`
+        FROM t_device td, t_area ta, t_part tp WHERE td.parent_id = tp.id AND tp.parent_id = ta.id
+        <!--有选中节点-->
+        <if test="level != null and level != ''">
+            <if test="nodeId != null and nodeId != ''">
+                <!--非组织节点-->
+                <if test="level != 4">
+                    AND tp.parent_id LIKE CONCAT(#{id},'%')
+                </if>
+                 <!--组织节点-->
+                <if test="level == 4">
+                    AND td.parent_id = #{id}
+                </if>
+            </if>
+        </if>
+        LIMIT #{page},#{limit}
+    </select>
+
+    <select id="queryDeviceByNodeIdTotal" parameterType="java.util.HashMap" resultType="Integer">
+        SELECT COUNT(td.id) AS total  FROM t_device td, t_area ta, t_part tp WHERE td.parent_id = tp.id AND tp.parent_id = ta.id
+        <!--有选中节点-->
+        <if test="level != null and level != ''">
+            <if test="nodeId != null and nodeId != ''">
+                <!--非组织节点-->
+                <if test="level != 4">
+                    AND tp.parent_id LIKE CONCAT(#{id},'%')
+                </if>
+                <!--组织节点-->
+                <if test="level == 4">
+                    AND td.parent_id = #{id}
+                </if>
+            </if>
+        </if>
+    </select>
+</mapper>
